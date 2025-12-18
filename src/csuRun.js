@@ -29,24 +29,34 @@ function sortKey(t, r) {
 }
 
 /**
- * 
- * @param {object} user -- 用户 
- * @param {string} user.userid -- 用户id 
- * @param {string} user.openid -- openid 
+* @typedef {Object} User
+* @property {string} userid 用户ID
+* @property {string} openid openid
+* @property {string} model 用户常用手机型号
+* @property {string} brand 用户常用手机品牌
+*/
+
+/**
+* @typedef {Object} Location
+* @property {number} latitude 纬度
+* @property {number} longitude 经度
+*/
+
+
+/**
+ * 获取用户基本信息
+ * @param {User} user -- 用户 
  */
 async function getHome(user) {
-    return await (await fetch(`${global.apiurl}/f/api/getHome?openid=${user.openid}&userid=${user.userid}`, {
+    return await (await fetch(`${global.apiurl}/f/api/getHome?openid=${user.openid}&userid=${user.userid}&model=${encodeURIComponent(user.model)}&brand=${encodeURIComponent(user.brand)}`, {
         method: "POST"
     })).json();
 }
 
 /**
- * 
- * @param {object} user -- 用户 
- * @param {string} user.userid -- 用户id 
- * @param {string} user.openid -- openid 
- * @returns e.g.
- * {"runScore":4.583,"scorePercent":45.8,"morningRunCount":1,"mileagePercent":36.8,"countPercent":36.1,"validCount":13.0,"retmsg":"执行成功！","mileage":46.38,"retcode":"000000"} --
+ * 获取跑步数据
+ * @param {User} user -- 用户 
+ * @returns {{"runScore":number,"scorePercent":number,"morningRunCount":number,"mileagePercent":number,"countPercent":number,"validCount":number,"retmsg":string,"mileage":number,"retcode":string}} --
  */
 async function getPersonaldata(user) {  
     return await (await fetch(`${global.apiurl}/f/api/getPersonaldata?openid=${user.openid}&userid=${user.userid}`, {
@@ -55,13 +65,12 @@ async function getPersonaldata(user) {
 }
 
 /**
- * 
+ * 获取锻炼数据
+ * @deprecated
  * @param {object} options
- * @param {object.user} options.user -- 用户
- * @param {string} options.user.openid -- openid
- * @param {string} options.user.userid -- userid
+ * @param {User} options.user -- 用户
  * @param {string} options.detailId -- 跑步detailId
- * @returns e.g. {"runStatus":"1","retmsg":"执行成功！","endStatus":0,"retcode":"000000"}
+ * @returns {{"runStatus":string,"retmsg":string,"endStatus":number,"retcode":string}}
  */
 async function getExerciseStatus(options) {
     return await (await fetch(`${global.apiurl}/f/api/getExerciseStatus?openid=${options.user.openid}&detailId=${options.detailId}`, {
@@ -71,10 +80,8 @@ async function getExerciseStatus(options) {
 
 
 /**
- * 
- * @param {object} user -- 用户
- * @param {string} user.openid -- openid
- * @param {string} user.userid -- userid
+ * 获取每次跑步详细数据
+ * @param {User} user -- 用户
 */
 async function runtermRecord(user) {
     return await (await fetch(`${global.apiurl}/f/api/runtermRecord?openid=${user.openid}&userid=${user.userid}&runType=0`, {
@@ -84,9 +91,8 @@ async function runtermRecord(user) {
 
 
 /**
- * 
- * @param {object} options 
- * @param {object.user} options.user -- 用户
+ * @deprecated
+ * @param {User} options.user -- 用户
  * @param {string} options.detailId -- 跑步detailId
  */
 async function getAllTrajectory(options) {
@@ -97,9 +103,10 @@ async function getAllTrajectory(options) {
 
 
 /**
+ * 获取跑步线路
  * @param {object} options 
- * @param {object.user} options.user -- 用户对象 
- * @param {object.location} options.location -- 当前经纬度
+ * @param {User} options.user -- 用户对象 
+ * @param {Location} options.location -- 当前经纬度
  * @param {string} options.areaNo -- 要请求的区域号
  */
 async function getRunLine(options) {
@@ -118,15 +125,12 @@ async function getRunLine(options) {
 }
 
 /**
- * 
+ * 开始跑步
  * @param {object} options 
- * @param {object.user} options.user -- 用户 
- * @param {object.location} options.location -- 跑步起始坐标
+ * @param {User} options.user -- 用户 
+ * @param {Location} options.location -- 跑步起始坐标
  * @param {string} options.lineId -- 线路编号
  * @param {string} options.areaNo -- 区域号
- * @param {object.device} options.device -- 设备
- * @param {string} options.device.brand -- 设备品牌
- * @param {string} options.device.model -- 设备型号
  * @param {string} options.runEvidence -- 跑步证据图片路径
  * @param {number} options.runSimilarity -- 跑步证据图片相似度
  */
@@ -141,8 +145,8 @@ async function startRun(options) {
         batchNo: '',
         lineId: options.lineId,
         areaNo: options.areaNo,
-        brand: options.device.brand,
-        model: options.device.model,
+        brand: options.user.brand,
+        model: options.user.model,
         runEvidence: options.runEvidence||'',
         runSimilarity: options.runSimilarity||0,
     };
@@ -156,10 +160,10 @@ async function startRun(options) {
 }
 
 /**
- * 
+ * 跑步打卡
  * @param {object} options 
- * @param {object.user} options.user -- 用户 
- * @param {object.location} options.location -- 打卡当前坐标
+ * @param {User} options.user -- 用户 
+ * @param {Location} options.location -- 打卡当前坐标
  * @param {string} options.detailId -- 跑步detailId
  * @param {string} options.deviceId -- 打卡标记设备id
  * @returns 
@@ -183,9 +187,9 @@ async function runPunchCard(options) {
 }
 
 /**
- * 
+ * 获取打卡数据
  * @param {object} options 
- * @param {object.user} options.user -- 用户 
+ * @param {User} options.user -- 用户 
  * @param {string} options.detailId -- 跑步detailId
  */
 async function getPunchCard(options) {
@@ -205,9 +209,9 @@ async function getPunchCard(options) {
 }
 
 /**
- * 
+ * 结束跑步
  * @param {object} options 
- * @param {object.user} options.user -- 用户 
+ * @param {User} options.user -- 用户 
  * @param {number} options.mileage -- 结束里程 
  * @param {number} options.seqNo -- 坐标点索引（长度-1） 
  * @param {string} options.detailId -- 跑步detailId
@@ -242,9 +246,9 @@ async function stopRun(options) {
 }
 
 /**
- * 
+ * 上传轨迹文件
  * @param {object} options 
- * @param {object.user} options.user -- 用户 
+ * @param {User} options.user -- 用户 
  * @param {string} options.detailId -- 跑步detailId
  * @param {Array<String>} options.fileImg -- 跑步轨迹坐标点
  * @returns 
@@ -269,9 +273,10 @@ async function uploadFile(options) {
 
 
 /**
- *
+ * 上传跑步证据文件
+ * @deprecated
  * @param {object} options
- * @param {object.user} options.user -- 用户
+ * @param {User} options.user -- 用户
  * @param {string} options.detailId -- 跑步detailId
  * @param {string} options.batchNo -- batchNo时间戳
  * @param {Blob} options.fileImg -- 证据图片
@@ -299,6 +304,7 @@ async function uploadRunEvidence(options) {
         body: formData
     })).json();
 }
+
 const maps={
     "1387205314898046976":"trackPoints_南校.json",
     "1414774360522981376":"trackPoints_湘雅.json",
