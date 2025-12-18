@@ -211,7 +211,7 @@ async function getPunchCard(options) {
 /**
  * 结束跑步
  * @param {object} options 
- * @param {User} options.user -- 用户 
+ * @param {string} options.code -- wx.login返回的一次性登录码
  * @param {number} options.mileage -- 结束里程 
  * @param {number} options.seqNo -- 坐标点索引（长度-1） 
  * @param {string} options.detailId -- 跑步detailId
@@ -220,7 +220,7 @@ async function getPunchCard(options) {
  */
 async function stopRun(options) {
     let formData={
-        openid: options.user.openid,
+        openid: options.code,
         detailId: options.detailId,
         runType: 1,
         endTime: (Date.parse(new Date))/1e3,
@@ -232,9 +232,14 @@ async function stopRun(options) {
         remarks: options.remarks||'',
         suspendTime: 0,
         suspendCount: 0,
-        sign: sign(sortKey({openid: options.user.openid, detailId: options.detailId, latitude: '', longitude: '', endTime: (Date.parse(new Date))/1e3, mileage: options.mileage, runType: 1}, global.dataKey)),
+        sign: sign(sortKey({openid: options.code, detailId: options.detailId, latitude: '', longitude: '', endTime: (Date.parse(new Date))/1e3, mileage: options.mileage, runType: 1}, global.dataKey)),
         latitude: '',
-        longitude: ''
+        longitude: '',
+        brand: options.brand,
+        model: options.model,
+        swipeStatus: options.swipeStatus || 0,
+        checkType: options.checkType || 0,
+        checkUpload: options.checkUpload || 0
     };
     return await (await fetch(`${global.apiurl}/f/api/stopRun`, {
         method: "POST",
@@ -321,4 +326,18 @@ const areas={
     "新校区":"1415493325914210304",
     "铁道校区":"1415493372307406848",
     "测试校区":"1387205314898046971"
+};
+
+module.exports = {
+    maps,
+    areas,
+    getHome,
+    getPersonaldata,
+    runtermRecord,
+    getRunLine,
+    startRun,
+    runPunchCard,
+    getPunchCard,
+    stopRun,
+    uploadFile
 };
