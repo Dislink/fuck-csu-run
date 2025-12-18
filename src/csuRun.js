@@ -1,10 +1,4 @@
 const { createHash } = require("crypto");
-const { readFileSync, writeFileSync } = require("fs");
-const { exit } = require("process");
-const readlineSync = require('readline-sync');
- 
-
-
 
 global.apiurl="http://run.csu.edu.cn/";
 global.dataKey="f732e8b4c15a9d2e6f87b3c9a1d4e6f7";
